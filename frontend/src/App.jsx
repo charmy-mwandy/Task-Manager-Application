@@ -118,7 +118,6 @@ refreshList = () => {
     // const newItems = this.state.todoList.filter(
     //   item => item.completed === viewCompleted
     // );
-
     const { viewCompleted, todoList } = this.state;
     const filteredItems = todoList.filter(item => item.completed === viewCompleted);
 
@@ -131,13 +130,13 @@ refreshList = () => {
       <span className={`todo-title mr-2 ${this.state.viewCompleted ? "completed-todo" : ""}`}
       title={item.title}>
 
-      { item.title }
+      {item.title}
       
       </span>
 
       <span>
-        <a href="#" target="_blank" rel="noopener noreferrer" className="btn btn-outline-danger mr-2 ">Delete</a>
-        <a href="#" target="_blank" rel="noopener noreferrer" className="btn btn-outline-success mr-2  ">Edit</a>
+        <button className="btn btn-outline-danger mr-2" onClick={() => this.handleDelete(item)}>Delete</button>
+        <button className="btn btn-outline-success mr-2" onClick={() =>this. editItem(item)}>Edit</button>
       </span>
     </li>
 
