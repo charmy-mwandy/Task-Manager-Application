@@ -1,48 +1,77 @@
 import React, { Component } from 'react'
 import './App.css'
-import CustomModal from './components/Modals';
-
-const goals = [
-  {
-    id: 1,
-    title: "Party",
-    description: "To night.",
-    completed: true
-  }, {
-    id: 2,
-    title: "Reading",
-    description: "To night.",
-    completed: false
-  },  {
-    id: 3,
-    title: "Cleaning",
-    description: "To night.",
-    completed: true
-  }, {
-    id: 4,
-    title: "Shopping",
-    description: "To night.",
-    completed: false
-  }
-  
-]
+import Modal from './components/Modals';
+import axios from 'axios';
 
 class  App extends Component {
   constructor(props){
     super(props);
     this.state = {
+      modal: false,
       viewCompleted: false,
-      taskList: goals,
-
+      activeItem: {
+        title: "",
+        description: "",
+        completed: false
+      },
+      todoList: [],
     };
   }
 
-  displayCompleted = status => {
-    if (status) {
-      return this.setstatus({viewCompleted: true});
+componentDidMount() {
+  this.refreshList();
+}
+
+refreshList = () => {
+  axios
+  .get("http://localhost:8000/api/goals/")
+  .then(res => this.setState({ todoList: res.data }))
+  .catch(err => console.log(err))
+}
+
+
+//Creating toggle properties
+  toggle = ()  => {
+    this.setState({ modal: !this.state.modal })
+  };
+
+  handleSubmit = item => {
+    this.toggle();
+    if(item.id){
+      axios
+      .get(`http://localhost:8000/api/goals/${item.id}/`, item)
+      .then(res => this.refreshList())
     }
-    return this.setstatus({viewCompleted: false});
+    axios
+    .post("http://localhost:8000/api/goals/", item)
+    .then(res => this.refreshList())
+  };
+
+  handleDelete = item => {
+    axios
+    .delete(`http://localhost:8000/api/goals/${item.id}/`)
+    .then(res => this.refreshList())
+  };
+
+  createItem = () => {
+    // const item = { title: "", modal: !this.state.modal }
+    const item = { title: "", description: "", completed: false ,modal: !this.state.modal  };
+    this.setState({ activeItem: item, modal: !this.state.modal })
   }
+
+  editItem = () => {
+    this.setState({ activeItem: item, modal: !this.state.modal })
+  }
+
+  // displayCompleted = status => {
+  //   if (status) {
+  //     return this.setState({viewCompleted: true});
+  //   }
+  //   return this.setState({viewCompleted: false});
+  // }
+  displayCompleted = status => {
+    this.setState({ viewCompleted: status });
+  };
 
   renderTabList = () => {
     return (
@@ -56,8 +85,8 @@ class  App extends Component {
             cursor: 'pointer', 
             borderRadius: 10, 
             padding:"5px 8px",
-            color: this.state.viewCompleted ? 'black' : 'white',
-            backgroundColor: this.state.viewCompleted ? 'white' : 'black'
+            color: this.state.viewCompleted ? 'white' : 'black', // Text color for active/inactive state
+            backgroundColor: this.state.viewCompleted ? 'black' : 'white' 
           }}
           
         >
@@ -72,8 +101,8 @@ class  App extends Component {
             cursor: 'pointer', 
             borderRadius: 10, 
             padding:"5px 8px",
-            color: this.state.viewCompleted ? 'white' : 'black',
-            backgroundColor: this.state.viewCompleted ? 'black' : 'white'
+            color: this.state.viewCompleted ? 'black' : 'white', // Text color for active/inactive state
+            backgroundColor: this.state.viewCompleted ? 'white' : 'black'
           }}
           
          
@@ -85,12 +114,16 @@ class  App extends Component {
   }
 
   renderItems = () => {
-    const { viewCompleted } = this.state;
-    const newItems = this.state.taskList.filter(
-      item => item.completed == viewCompleted
-    );
+    // const { viewCompleted } = this.state;
+    // const newItems = this.state.todoList.filter(
+    //   item => item.completed === viewCompleted
+    // );
 
-  return newItems.map(item =>  (
+    const { viewCompleted, todoList } = this.state;
+    const filteredItems = todoList.filter(item => item.completed === viewCompleted);
+
+
+  return filteredItems.map(item =>  (
     <li 
       key={item.id}
       className="list-group-item d-flex justify-content-between align-items-center"
@@ -113,13 +146,13 @@ class  App extends Component {
 
   render() {
     return(
-      <div className="content">
+      <div className="content p-3 mb-2 bg-gray-light h-full">
         <h1 className="text-black text-center text-xl font-bold my-4">Task App</h1>
         <div className="row">
           <div className="col-md-6 col-sma-10 mx-auto p-0 bg-gray-300" >
             <div className="card p-8">
               <div>
-                <a href="#" target="_blank" rel="noopener noreferrer" className='btn btn-dark'>Add Task</a>
+                <button className='btn btn-dark'  onClick={this.createItem}>Add Task</button>
               </div>
               {this.renderTabList()}
               <ul className="list-group list-group-flush">
@@ -129,14 +162,17 @@ class  App extends Component {
 
           </div>
         </div>
+        
+        {this.state.modal ? (
+          <Modal activeItem={this.state.activeItem} toggle={this.toggle}
+          onSave={this.handleSubmit}/>
+          
+        ) : null}
+
       </div>
+
     )
-
   }
-
-
-
 }
-
 
 export default App
