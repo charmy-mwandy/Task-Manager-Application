@@ -36,16 +36,22 @@ refreshList = () => {
   };
 
   handleSubmit = item => {
-    this.toggle();
-    if(item.id){
-      axios
-      .get(`http://localhost:8000/api/goals/${item.id}/`, item)
-      .then(res => this.refreshList())
+    this.toggle();  // Close the modal
+    if (item.id) {
+        // Update existing item using PUT
+        axios
+            .put(`http://localhost:8000/api/goals/${item.id}/`, item)
+            .then(res => this.refreshList())
+            .catch(err => console.log(err));
+    } else {
+        // Create new item using POST
+        axios
+            .post("http://localhost:8000/api/goals/", item)
+            .then(res => this.refreshList())
+            .catch(err => console.log(err));
     }
-    axios
-    .post("http://localhost:8000/api/goals/", item)
-    .then(res => this.refreshList())
-  };
+};
+
 
   handleDelete = item => {
     axios
@@ -59,16 +65,11 @@ refreshList = () => {
     this.setState({ activeItem: item, modal: !this.state.modal })
   }
 
-  editItem = () => {
-    this.setState({ activeItem: item, modal: !this.state.modal })
+  editItem = (item) => {
+    this.setState({ activeItem: item, modal: true})
+    // this.setState({ activeItem: item, modal: !this.state.modal });
   }
 
-  // displayCompleted = status => {
-  //   if (status) {
-  //     return this.setState({viewCompleted: true});
-  //   }
-  //   return this.setState({viewCompleted: false});
-  // }
   displayCompleted = status => {
     this.setState({ viewCompleted: status });
   };
@@ -136,7 +137,7 @@ refreshList = () => {
 
       <span>
         <button className="btn btn-outline-danger mr-2" onClick={() => this.handleDelete(item)}>Delete</button>
-        <button className="btn btn-outline-success mr-2" onClick={() =>this. editItem(item)}>Edit</button>
+        <button className="btn btn-outline-success mr-2" onClick={() =>this.editItem(item)}>Edit</button>
       </span>
     </li>
 
